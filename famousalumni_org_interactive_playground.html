@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>famousalumni.org — Outcomes-First College Discovery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              800: '#163554',
+              900: '#0f2942',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card-hover {
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -6px rgba(15, 41, 66, 0.08);
+      border-color: #cbd5e1;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Interactive Playground Banner -->
+  <div class="bg-navy-900 text-white text-xs sm:text-sm py-2.5 px-4 border-b border-navy-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+          PLAYGROUND MODE
+        </span>
+        <span class="text-slate-200">
+          Drop in names anytime—colleges automatically unlock their full spotlight once they hit <strong class="text-white" id="bannerThresholdLabel">10</strong> approved alumni.
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="openBatchModal()" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-navy-900 font-semibold text-xs transition cursor-pointer">
+          + Quick Add Names
+        </button>
+        <button onclick="navigate('queue')" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium text-xs transition cursor-pointer flex items-center gap-1.5">
+          <span>Admin Queue</span>
+          <span id="navQueueBadge" class="px-1.5 py-0.2 rounded-full bg-amber-400 text-navy-900 font-bold text-[11px]">2</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single-Line Top Navigation Bar -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 sm:gap-6">
+      <!-- Brand Logo -->
+      <button onclick="navigate('home')" class="flex items-center gap-2.5 shrink-0 text-left group cursor-pointer focus:outline-none">
+        <div class="w-8 h-8 rounded-lg bg-navy-900 text-white flex items-center justify-center font-bold text-sm tracking-tight shadow-sm group-hover:bg-navy-800 transition">
+          fa
+        </div>
+        <span class="font-bold text-base sm:text-lg tracking-tight text-navy-900 whitespace-nowrap">
+          famousalumni<span class="text-amber-600">.org</span>
+        </span>
+      </button>
+
+      <!-- Live Search Bar -->
+      <div class="flex-1 max-w-md relative">
+        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+        </svg>
+        <input
+          id="globalSearchInput"
+          type="text"
+          placeholder="Search alumni, colleges, degrees (MD, BS), or fields..."
+          oninput="handleSearch(this.value)"
+          class="w-full pl-9 pr-8 py-2 text-sm bg-slate-100/80 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-navy-900 rounded-xl outline-none transition text-slate-900 placeholder:text-slate-400"
+        />
+        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer" title="Clear search">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Single-Line Nav Tabs -->
+      <nav aria-label="Main navigation" class="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+        <button data-nav="home" onclick="navigate('home')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition cursor-pointer">
+          Home
+        </button>
+        <button data-nav="colleges" onclick="navigate('colleges')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition cursor-pointer">
+          Colleges
+        </button>
+        <button data-nav="categories" onclick="navigate('categories')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition cursor-pointer">
+          Categories
+        </button>
+        <button data-nav="submit" onclick="navigate('submit')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition cursor-pointer">
+          Submit
+        </button>
+        <button data-nav="about" onclick="navigate('about')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition cursor-pointer">
+          About
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Toast Notification Box (Replaces alert) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Main Content Mount Point -->
+  <main id="appMain" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8"></main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-navy-900">famousalumni.org</span>
+        <span>•</span>
+        <span>Outcomes-first college discovery directory. Paraphrased reference records verified via Wikipedia.</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button onclick="openBatchModal()" class="text-navy-900 font-medium hover:underline cursor-pointer">Batch Add Alumni</button>
+        <button onclick="resetPlaygroundData()" class="text-slate-400 hover:text-slate-600 cursor-pointer">Reset Sample Data</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Alumni Detail Modal -->
+  <div id="alumniModal" class="hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeAlumniModal()">
+    <div id="alumniModalCard" class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative"></div>
+  </div>
+
+  <!-- Quick Batch Add Modal -->
+  <div id="batchModal" class="hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeBatchModal()">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 sm:p-7">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">Playground Tool</span>
+          <h2 class="text-xl font-bold text-navy-900 mt-2">Quick Batch Add Names</h2>
+          <p class="text-sm text-slate-500 mt-1">Paste one name per line to add them directly to a college and watch the 10-alumni spotlight threshold trigger live.</p>
+        </div>
+        <button onclick="closeBatchModal()" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Target College</label>
+            <select id="batchCollegeSelect" class="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Default Category</label>
+            <select id="batchCategorySelect" class="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none"></select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Alumni Names (one per line, optional format: <code class="text-xs bg-slate-100 px-1 rounded">Name | Degree | Short note</code>)</label>
+          <textarea
+            id="batchNamesInput"
+            rows="6"
+            placeholder="Alex Rivera | BS Computer Science | Founded campus robotics club&#10;Jordan Patel | MD | Varsity track captain&#10;Taylor Kim"
+            class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none font-normal"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <label class="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+            <input id="batchAutoApprove" type="checkbox" checked class="rounded border-slate-300 text-navy-900 focus:ring-navy-900" />
+            <span>Approve immediately (uncheck to send to Admin Queue)</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <button onclick="closeBatchModal()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">Cancel</button>
+            <button onclick="submitBatchNames()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-navy-900 hover:bg-navy-800 text-white shadow-sm cursor-pointer">Add to Directory</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. CONFIGURATION & CONSTANTS
+    // =========================================================================
+    const STORAGE_KEY = 'famousalumni_playground_v1';
+    const CATEGORIES = [
+      'Actors & Film',
+      'Business & Tech',
+      'Politics & Public Service',
+      'Sports',
+      'Music & Arts',
+      'Science & Medicine'
+    ];
+
+    const CATEGORY_META = {
+      'Actors & Film': { desc: 'Screenwriters, directors, actors, and cinema pioneers.', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+      'Business & Tech': { desc: 'Founders, engineers, executives, and venture builders.', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+      'Politics & Public Service': { desc: 'Public officials, jurists, diplomats, and civic leaders.', color: 'bg-amber-50 text-amber-800 border-amber-200' },
+      'Sports': { desc: 'Olympic medalists, professional athletes, and coaches.', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+      'Music & Arts': { desc: 'Musicians, authors, visual artists, and architects.', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+      'Science & Medicine': { desc: 'Researchers, physicians, inventors, and Nobel laureates.', color: 'bg-cyan-50 text-cyan-800 border-cyan-200' }
+    };
+
+    // =========================================================================
+    // 2. SEED DATA (Dartmouth has 11 alumni >= 10 threshold; others < 10)
+    // =========================================================================
+    const DEFAULT_COLLEGES = [
+      { id: 'dartmouth', name: 'Dartmouth College', shortName: 'Dartmouth', tier: 'Ivies', location: 'Hanover, NH', description: 'Private Ivy League research university known for its undergraduate focus, D-Plan quarter system, and strong traditions in public service, arts, and outdoor leadership.' },
+      { id: 'harvard', name: 'Harvard University', shortName: 'Harvard', tier: 'Ivies', location: 'Cambridge, MA', description: 'Private Ivy League research university in Cambridge with deep historical footprints across law, government, technology, and scientific research.' },
+      { id: 'yale', name: 'Yale University', shortName: 'Yale', tier: 'Ivies', location: 'New Haven, CT', description: 'Private Ivy League institution renowned for drama, humanities, public policy, and residential college life.' },
+      { id: 'princeton', name: 'Princeton University', shortName: 'Princeton', tier: 'Ivies', location: 'Princeton, NJ', description: 'Private Ivy League research university emphasizing undergraduate independent research, mathematics, and public policy.' },
+      { id: 'stanford', name: 'Stanford University', shortName: 'Stanford', tier: 'T20', location: 'Stanford, CA', description: 'Private research university in Silicon Valley closely linked to technology entrepreneurship, engineering, and athletics.' },
+      { id: 'mit', name: 'Massachusetts Institute of Technology', shortName: 'MIT', tier: 'T20', location: 'Cambridge, MA', description: 'Private research institution world-renowned for engineering, computer science, applied physics, and quantitative economics.' },
+      { id: 'duke', name: 'Duke University', shortName: 'Duke', tier: 'T20', location: 'Durham, NC', description: 'Private research university recognized for biomedical research, public policy, and championship collegiate athletics.' },
+      { id: 'uvm', name: 'University of Vermont', shortName: 'UVM', tier: 'Other', location: 'Burlington, VT', description: 'Public land-grant research university overlooking Lake Champlain with strengths in environmental science, medicine, and winter sports.' }
+    ];
+
+    const DEFAULT_ALUMNI = [
+      // --- DARTMOUTH COLLEGE (11 Approved Alumni -> Unlocks Full Spotlight!) ---
+      {
+        id: 'mindy-kaling',
+        name: 'Mindy Kaling',
+        collegeId: 'dartmouth',
+        degree: 'BA Playwriting (2001)',
+        category: 'Actors & Film',
+        overallBio: 'Emmy-nominated actor, writer, and producer celebrated for creating and starring in hit television comedies including The Office and The Mindy Project.',
+        campusNote: 'Majored in playwriting, sang with the Rockapellas a cappella group, and drew a daily comic strip for The Dartmouth.',
+        notableWork: 'The Office, The Mindy Project, Never Have I Ever',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Mindy_Kaling',
+        status: 'approved',
+        featured: true
+      },
+      {
+        id: 'dr-seuss',
+        name: 'Theodor Seuss Geisel (Dr. Seuss)',
+        collegeId: 'dartmouth',
+        degree: 'BA English (1925)',
+        category: 'Music & Arts',
+        overallBio: 'Author and illustrator whose imaginative children’s books sold over 600 million copies worldwide and shaped modern early-reading culture.',
+        campusNote: 'Served as editor-in-chief of the campus humor magazine Dartmouth Jack-O-Lantern, where he first began signing work as "Seuss."',
+        notableWork: 'The Cat in the Hat, Green Eggs and Ham, The Lorax',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Dr._Seuss',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'shonda-rhimes',
+        name: 'Shonda Rhimes',
+        collegeId: 'dartmouth',
+        degree: 'BA English & Film (1991)',
+        category: 'Actors & Film',
+        overallBio: 'Television producer and screenwriter who founded Shondaland and created landmark series including Grey’s Anatomy, Scandal, and Bridgerton.',
+        campusNote: 'Directed and performed in student theatrical productions and edited campus fiction publications while majoring in English and film.',
+        notableWork: "Grey's Anatomy, Scandal, Bridgerton",
+        sourceUrl: 'https://en.wikipedia.org/wiki/Shonda_Rhimes',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'robert-reich',
+        name: 'Robert Reich',
+        collegeId: 'dartmouth',
+        degree: 'BA History (1968)',
+        category: 'Politics & Public Service',
+        overallBio: 'Economist, author, and professor who served as the 22nd U.S. Secretary of Labor and advised multiple presidential administrations.',
+        campusNote: 'Earned a Rhodes Scholarship following graduation and was active in student government and campus political forums.',
+        notableWork: '22nd U.S. Secretary of Labor, Saving Capitalism',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Robert_Reich',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'mikaela-shiffrin-note',
+        name: 'Andrew Shue',
+        collegeId: 'dartmouth',
+        degree: 'BA History (1989)',
+        category: 'Actors & Film',
+        overallBio: 'Actor and social entrepreneur known for his starring role on Melrose Place and for co-founding the youth civic platform DoSomething.org.',
+        campusNote: 'Played varsity NCAA Division I soccer for Dartmouth and earned All-Ivy honors before playing professionally abroad.',
+        notableWork: 'Melrose Place, Co-founder of DoSomething.org',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Andrew_Shue',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'david-harbour',
+        name: 'David Harbour',
+        collegeId: 'dartmouth',
+        degree: 'BA Drama & Italian (1997)',
+        category: 'Actors & Film',
+        overallBio: 'Emmy- and Tony-nominated actor best known for portraying Jim Hopper in Netflix’s Stranger Things and starring in major studio films.',
+        campusNote: 'Double-majored in drama and Italian and performed extensively in Dartmouth Department of Theater productions.',
+        notableWork: 'Stranger Things, Black Widow, Hellboy',
+        sourceUrl: 'https://en.wikipedia.org/wiki/David_Harbour',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'kirsten-gillibrand',
+        name: 'Kirsten Gillibrand',
+        collegeId: 'dartmouth',
+        degree: 'BA Asian Studies (1988)',
+        category: 'Politics & Public Service',
+        overallBio: 'United States Senator from New York since 2009, previously serving in the U.S. House of Representatives.',
+        campusNote: 'Majored in Asian studies, studied abroad in Beijing and Taiwan, and participated in campus student governance.',
+        notableWork: 'U.S. Senator from New York',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Kirsten_Gillibrand',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'jake-tapper',
+        name: 'Jake Tapper',
+        collegeId: 'dartmouth',
+        degree: 'BA History (1991)',
+        category: 'Politics & Public Service',
+        overallBio: 'Television journalist, anchor, and author serving as lead Washington anchor for CNN.',
+        campusNote: 'Graduated Phi Beta Kappa in history and contributed cartoons and commentary to campus publications.',
+        notableWork: 'The Lead with Jake Tapper, State of the Union',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Jake_Tapper',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'fred-rogers',
+        name: 'Fred Rogers',
+        collegeId: 'dartmouth',
+        degree: 'Attended (1946–1948)',
+        category: 'Music & Arts',
+        overallBio: 'Creator, composer, and host of Mister Rogers’ Neighborhood, pioneering compassionate educational television for children.',
+        campusNote: 'Studied Romance languages at Dartmouth for two years before transferring to Rollins College to pursue music composition.',
+        notableWork: "Mister Rogers' Neighborhood",
+        sourceUrl: 'https://en.wikipedia.org/wiki/Fred_Rogers',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'abby-d-phillip-sub',
+        name: 'Aisha Tyler',
+        collegeId: 'dartmouth',
+        degree: 'BA Environmental Policy (1992)',
+        category: 'Actors & Film',
+        overallBio: 'Actor, comedian, and director known for Archer, Criminal Minds, and hosting Whose Line Is It Anyway?.',
+        campusNote: 'Co-founded and sang in the Dartmouth Rockapellas and graduated with a degree in environmental policy.',
+        notableWork: 'Archer, Criminal Minds, Whose Line Is It Anyway?',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Aisha_Tyler',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'timothy-geithner',
+        name: 'Timothy Geithner',
+        collegeId: 'dartmouth',
+        degree: 'BA Government & Asian Studies (1983)',
+        category: 'Business & Tech',
+        overallBio: 'Economist and policymaker who served as the 75th U.S. Secretary of the Treasury and President of the Federal Reserve Bank of New York.',
+        campusNote: 'Studied government and Asian studies and completed language study programs in Beijing.',
+        notableWork: '75th U.S. Secretary of the Treasury',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Timothy_Geithner',
+        status: 'approved',
+        featured: false
+      },
+
+      // --- HARVARD UNIVERSITY (3 Approved -> Shows < 10 Minimalist Fallback!) ---
+      {
+        id: 'natalie-portman',
+        name: 'Natalie Portman',
+        collegeId: 'harvard',
+        degree: 'BA Psychology (2003)',
+        category: 'Actors & Film',
+        overallBio: 'Academy Award-winning actor and filmmaker acclaimed for roles in Black Swan, Jackie, and the Star Wars prequel trilogy.',
+        campusNote: 'Completed a psychology degree while acting during breaks and co-authored two psychology research papers published in scientific journals.',
+        notableWork: 'Black Swan, Jackie, V for Vendetta',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Natalie_Portman',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'barack-obama',
+        name: 'Barack Obama',
+        collegeId: 'harvard',
+        degree: 'JD Law (1991)',
+        category: 'Politics & Public Service',
+        overallBio: '44th President of the United States (2009–2017) and Nobel Peace Prize laureate.',
+        campusNote: 'Earned his Juris Doctor magna cum laude from Harvard Law School and became the first Black president of the Harvard Law Review.',
+        notableWork: '44th President of the United States, Dreams from My Father',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Barack_Obama',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'mark-zuckerberg',
+        name: 'Mark Zuckerberg',
+        collegeId: 'harvard',
+        degree: 'Attended CS & Psychology (2002–2004)',
+        category: 'Business & Tech',
+        overallBio: 'Co-founder and CEO of Meta Platforms, launching Facebook from his college dorm room in 2004.',
+        campusNote: 'Studied computer science and psychology in Kirkland House before leaving sophomore year to scale Facebook full-time.',
+        notableWork: 'Co-founder & CEO of Meta / Facebook',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Mark_Zuckerberg',
+        status: 'approved',
+        featured: false
+      },
+
+      // --- STANFORD UNIVERSITY (2 Approved -> Shows < 10 Minimalist Fallback!) ---
+      {
+        id: 'sally-ride',
+        name: 'Sally Ride',
+        collegeId: 'stanford',
+        degree: 'BS Physics, BA English, PhD Physics (1978)',
+        category: 'Science & Medicine',
+        overallBio: 'Physicist and NASA astronaut who became the first American woman to fly in space in 1983.',
+        campusNote: 'Earned four degrees at Stanford—including a PhD in astrophysics—and competed on the Stanford varsity tennis team.',
+        notableWork: 'STS-7 Space Shuttle Challenger Mission, Sally Ride Science',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Sally_Ride',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'tiger-woods',
+        name: 'Tiger Woods',
+        collegeId: 'stanford',
+        degree: 'Attended Economics (1994–1996)',
+        category: 'Sports',
+        overallBio: 'Fifteen-time major golf champion widely regarded as one of the greatest golfers in history.',
+        campusNote: 'Won the 1996 NCAA individual golf championship while competing for the Stanford Cardinal before turning professional.',
+        notableWork: '15 Major Golf Championships, 82 PGA Tour Wins',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Tiger_Woods',
+        status: 'approved',
+        featured: false
+      },
+
+      // --- UVM (2 Approved -> Shows < 10 Minimalist Fallback!) ---
+      {
+        id: 'jody-williams',
+        name: 'Jody Williams',
+        collegeId: 'uvm',
+        degree: 'BA (1972)',
+        category: 'Politics & Public Service',
+        overallBio: 'Political activist awarded the 1997 Nobel Peace Prize for her work leading the International Campaign to Ban Landmines.',
+        campusNote: 'Completed her undergraduate studies at the University of Vermont before earning graduate degrees in international relations.',
+        notableWork: '1997 Nobel Peace Prize Laureate',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Jody_Williams',
+        status: 'approved',
+        featured: false
+      },
+      {
+        id: 'ben-cohen-note',
+        name: 'Jon Fishman',
+        collegeId: 'uvm',
+        degree: 'Attended (1983–1987)',
+        category: 'Music & Arts',
+        overallBio: 'Drummer and co-founder of the influential rock band Phish, formed in Burlington, Vermont.',
+        campusNote: 'Met his future Phish bandmates while attending the University of Vermont in Burlington during the mid-1980s.',
+        notableWork: 'Co-founder and drummer of Phish',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Jon_Fishman',
+        status: 'approved',
+        featured: false
+      },
+
+      // --- PENDING QUEUE SAMPLE ITEMS ---
+      {
+        id: 'pending-conan',
+        name: "Conan O'Brien",
+        collegeId: 'harvard',
+        degree: 'BA History & Literature (1985)',
+        category: 'Actors & Film',
+        overallBio: 'Comedian, writer, and longtime late-night television host of Late Night, The Tonight Show, and Conan.',
+        campusNote: 'Graduated magna cum laude and served twice as president of The Harvard Lampoon.',
+        notableWork: "Late Night with Conan O'Brien, The Simpsons (writer)",
+        sourceUrl: 'https://en.wikipedia.org/wiki/Conan_O%27Brien',
+        status: 'pending',
+        featured: false
+      },
+      {
+        id: 'pending-jensen',
+        name: 'Jensen Huang',
+        collegeId: 'stanford',
+        degree: 'MS Electrical Engineering (1992)',
+        category: 'Business & Tech',
+        overallBio: 'Co-founder, president, and CEO of NVIDIA, pioneering GPU computing and modern AI hardware infrastructure.',
+        campusNote: 'Earned his master’s degree in electrical engineering at Stanford while working as a microprocessor designer.',
+        notableWork: 'Co-founder & CEO of NVIDIA',
+        sourceUrl: 'https://en.wikipedia.org/wiki/Jensen_Huang',
+        status: 'pending',
+        featured: false
+      }
+    ];
+
+    // =========================================================================
+    // 3. APPLICATION STATE
+    // =========================================================================
+    let state = {
+      route: 'home',         // 'home' | 'colleges' | 'college-detail' | 'categories' | 'submit' | 'about' | 'queue'
+      selectedCollegeId: null,
+      selectedCategory: 'All',
+      tierFilter: 'All',
+      searchQuery: '',
+      threshold: 10,         // Configurable 10-alumni rule
+      colleges: [],
+      alumni: []
+    };
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state.colleges = parsed.colleges || structuredClone(DEFAULT_COLLEGES);
+          state.alumni = parsed.alumni || structuredClone(DEFAULT_ALUMNI);
+          state.threshold = typeof parsed.threshold === 'number' ? parsed.threshold : 10;
+          return;
+        }
+      } catch (err) {
+        console.warn('Could not load saved playground state:', err);
+      }
+      state.colleges = structuredClone(DEFAULT_COLLEGES);
+      state.alumni = structuredClone(DEFAULT_ALUMNI);
+      state.threshold = 10;
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          colleges: state.colleges,
+          alumni: state.alumni,
+          threshold: state.threshold
+        }));
+      } catch (err) {
+        console.warn('Could not persist state:', err);
+      }
+    }
+
+    function resetPlaygroundData() {
+      localStorage.removeItem(STORAGE_KEY);
+      state.colleges = structuredClone(DEFAULT_COLLEGES);
+      state.alumni = structuredClone(DEFAULT_ALUMNI);
+      state.threshold = 10;
+      render();
+      showToast('Sample dataset restored to defaults.', 'info');
+    }
+
+    // =========================================================================
+    // 4. HELPERS & SELECTORS
+    // =========================================================================
+    function getApprovedAlumni() {
+      return state.alumni.filter(a => a.status === 'approved');
+    }
+
+    function getPendingAlumni() {
+      return state.alumni.filter(a => a.status === 'pending');
+    }
+
+    function getCollegeById(id) {
+      return state.colleges.find(c => c.id === id) || { id, name: id, shortName: id, tier: 'Other', location: '', description: '' };
+    }
+
+    function getApprovedForCollege(collegeId) {
+      return getApprovedAlumni().filter(a => a.collegeId === collegeId);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getInitials(name) {
+      return (name || '?')
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(w => w[0].toUpperCase())
+        .join('');
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = type === 'success'
+        ? 'bg-navy-900 text-white border-navy-800'
+        : 'bg-slate-800 text-white border-slate-700';
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-sm font-medium flex items-center gap-2.5 transition-all duration-200 ${colors}`;
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
+        <span>${escapeHtml(message)}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(6px)';
+        setTimeout(() => toast.remove(), 220);
+      }, 3000);
+    }
+
+    // =========================================================================
+    // 5. NAVIGATION & SEARCH HANDLERS
+    // =========================================================================
+    function navigate(route, payload = null) {
+      state.route = route;
+      if (route === 'college-detail' && payload) {
+        state.selectedCollegeId = payload;
+      }
+      if (route === 'categories' && payload) {
+        state.selectedCategory = payload;
+      }
+      if (route === 'submit' && payload) {
+        state.selectedCollegeId = payload;
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      render();
+    }
+
+    function handleSearch(val) {
+      state.searchQuery = val.trim();
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (state.searchQuery) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      render();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('globalSearchInput');
+      input.value = '';
+      state.searchQuery = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      render();
+    }
+
+    function setThreshold(newVal) {
+      const num = Math.max(1, Math.min(25, parseInt(newVal, 10) || 10));
+      state.threshold = num;
+      saveState();
+      render();
+      showToast(`Spotlight threshold updated to ${num} alumni.`, 'info');
+    }
+
+    // =========================================================================
+    // 6. UI COMPONENT BUILDERS
+    // =========================================================================
+    function renderAlumniCard(alum, showCollege = true) {
+      const college = getCollegeById(alum.collegeId);
+      const catStyle = CATEGORY_META[alum.category]?.color || 'bg-slate-100 text-slate-700 border-slate-200';
+      return `
+        <article onclick="openAlumniModal('${alum.id}')" class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between card-hover cursor-pointer">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-navy-900/5 border border-navy-900/10 text-navy-900 font-bold text-xs flex items-center justify-center shrink-0">
+                  ${escapeHtml(getInitials(alum.name))}
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-bold text-slate-900 text-base truncate">${escapeHtml(alum.name)}</h3>
+                  ${showCollege ? `
+                    <button onclick="event.stopPropagation(); navigate('college-detail', '${college.id}')" class="text-xs font-medium text-navy-900 hover:underline truncate block text-left cursor-pointer">
+                      ${escapeHtml(college.name)}
+                    </button>
+                  ` : `
+                    <p class="text-xs text-slate-500 truncate">${escapeHtml(alum.degree || 'Alumnus')}</p>
+                  `}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5 mb-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${catStyle}">
+                ${escapeHtml(alum.category)}
+              </span>
+              ${showCollege && alum.degree ? `
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200/80">
+                  ${escapeHtml(alum.degree)}
+                </span>
+              ` : ''}
+            </div>
+
+            <p class="text-sm text-slate-600 line-clamp-3 leading-relaxed">
+              ${escapeHtml(alum.overallBio)}
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="text-slate-400 truncate max-w-[72%]">
+              ${alum.campusNote ? escapeHtml(alum.campusNote) : 'View profile & campus notes'}
+            </span>
+            <span class="font-semibold text-navy-900 shrink-0">Details →</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCollegeCard(college) {
+      const count = getApprovedForCollege(college.id).length;
+      const isSpotlight = count >= state.threshold;
+      const pct = Math.min(100, Math.round((count / state.threshold) * 100));
+
+      return `
+        <article onclick="navigate('college-detail', '${college.id}')" class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col justify-between card-hover cursor-pointer">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                ${escapeHtml(college.tier)}
+              </span>
+              ${isSpotlight ? `
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Full Spotlight
+                </span>
+              ` : `
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                  ${count} / ${state.threshold} Indexed
+                </span>
+              `}
+            </div>
+
+            <h3 class="font-bold text-lg text-navy-900 leading-snug">${escapeHtml(college.name)}</h3>
+            <p class="text-xs text-slate-400 mt-0.5">${escapeHtml(college.location || 'United States')}</p>
+
+            <p class="text-sm text-slate-600 mt-3 line-clamp-2 leading-relaxed">
+              ${isSpotlight
+                ? escapeHtml(college.description)
+                : `Minimalist listing active. Add ${Math.max(0, state.threshold - count)} more verified alumni to unlock the full spotlight grid.`}
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <span class="font-semibold text-slate-700">${count} ${count === 1 ? 'Alumnus' : 'Alumni'}</span>
+              <span class="text-navy-900 font-semibold">${isSpotlight ? 'Explore Spotlight →' : 'View / Add →'}</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full rounded-full ${isSpotlight ? 'bg-emerald-500' : 'bg-amber-400'}" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    // =========================================================================
+    // 7. PAGE VIEWS
+    // =========================================================================
+    function renderSearchResults() {
+      const q = state.searchQuery.toLowerCase();
+      const matchedAlumni = getApprovedAlumni().filter(a => {
+        const col = getCollegeById(a.collegeId);
+        return (
+          a.name.toLowerCase().includes(q) ||
+          col.name.toLowerCase().includes(q) ||
+          (a.degree && a.degree.toLowerCase().includes(q)) ||
+          a.category.toLowerCase().includes(q) ||
+          a.overallBio.toLowerCase().includes(q) ||
+          (a.campusNote && a.campusNote.toLowerCase().includes(q))
+        );
+      });
+
+      const matchedColleges = state.colleges.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.tier.toLowerCase().includes(q) ||
+        (c.location && c.location.toLowerCase().includes(q))
+      );
+
+      return `
+        <div class="space-y-8">
+          <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Live Directory Search</p>
+              <h1 class="text-xl sm:text-2xl font-bold text-navy-900 mt-0.5">
+                Results for “${escapeHtml(state.searchQuery)}”
+              </h1>
+            </div>
+            <button onclick="clearSearch()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">
+              Clear Search
+            </button>
+          </div>
+
+          ${matchedColleges.length ? `
+            <section>
+              <h2 class="text-lg font-bold text-navy-900 mb-4">Matching Colleges (${matchedColleges.length})</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                ${matchedColleges.map(renderCollegeCard).join('')}
+              </div>
+            </section>
+          ` : ''}
+
+          <section>
+            <h2 class="text-lg font-bold text-navy-900 mb-4">Matching Alumni (${matchedAlumni.length})</h2>
+            ${matchedAlumni.length ? `
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                ${matchedAlumni.map(a => renderAlumniCard(a, true)).join('')}
+              </div>
+            ` : `
+              <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center">
+                <p class="text-base font-semibold text-slate-800">No approved alumni matched “${escapeHtml(state.searchQuery)}”</p>
+                <p class="text-sm text-slate-500 mt-1">Want to add them to the playground directory right now?</p>
+                <button onclick="clearSearch(); navigate('submit')" class="mt-4 px-4 py-2 rounded-xl bg-navy-900 text-white text-sm font-semibold hover:bg-navy-800 cursor-pointer">
+                  + Suggest This Alumnus
+                </button>
+              </div>
+            `}
+          </section>
+        </div>
+      `;
+    }
+
+    function renderHomeView() {
+      const approved = getApprovedAlumni();
+      const pending = getPendingAlumni();
+      const spotlightColleges = state.colleges.filter(c => getApprovedForCollege(c.id).length >= state.threshold);
+      const featuredAlum = approved.find(a => a.featured) || approved[0];
+      const featuredCollege = featuredAlum ? getCollegeById(featuredAlum.collegeId) : null;
+
+      return `
+        <div class="space-y-10">
+          <!-- Hero + Alumni of the Day -->
+          <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-900/5 border border-navy-900/10 text-navy-900 text-xs font-semibold mb-4">
+                  <span>Outcomes-First College Discovery</span>
+                </div>
+                <h1 class="text-2xl sm:text-4xl font-bold text-navy-900 tracking-tight leading-tight">
+                  See what students actually build after graduation.
+                </h1>
+                <p class="text-slate-600 text-sm sm:text-base mt-3 leading-relaxed max-w-2xl">
+                  Skip the repetitive admissions stats. Explore notable alumni by university, degree credential, and campus activities—backed by clean two-part biographies and primary source links.
+                </p>
+              </div>
+
+              <div class="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-3">
+                <button onclick="navigate('colleges')" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold shadow-sm transition cursor-pointer">
+                  Browse Colleges
+                </button>
+                <button onclick="openBatchModal()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-sm transition cursor-pointer">
+                  + Drop In Names
+                </button>
+                <button onclick="navigate('categories')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition cursor-pointer">
+                  Explore Fields
+                </button>
+              </div>
+            </div>
+
+            <!-- Alumni of the Day Card -->
+            ${featuredAlum ? `
+              <div class="lg:col-span-5 bg-navy-900 text-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between shadow-sm">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-4">
+                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-400 text-navy-900">
+                      Alumni of the Day
+                    </span>
+                    <span class="text-xs text-slate-300">${escapeHtml(featuredAlum.category)}</span>
+                  </div>
+
+                  <div class="flex items-center gap-3.5 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center font-bold text-base text-amber-300 shrink-0">
+                      ${escapeHtml(getInitials(featuredAlum.name))}
+                    </div>
+                    <div>
+                      <h2 class="text-xl font-bold leading-snug">${escapeHtml(featuredAlum.name)}</h2>
+                      <button onclick="navigate('college-detail', '${featuredCollege.id}')" class="text-xs text-amber-300 hover:underline font-medium cursor-pointer">
+                        ${escapeHtml(featuredCollege.name)} • ${escapeHtml(featuredAlum.degree || '')}
+                      </button>
+                    </div>
+                  </div>
+
+                  <p class="text-sm text-slate-200 leading-relaxed">
+                    ${escapeHtml(featuredAlum.overallBio)}
+                  </p>
+
+                  ${featuredAlum.campusNote ? `
+                    <div class="mt-3 p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-slate-300 leading-relaxed">
+                      <strong class="text-white">Campus Context:</strong> ${escapeHtml(featuredAlum.campusNote)}
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
+                  <a href="${escapeHtml(featuredAlum.sourceUrl || 'https://en.wikipedia.org')}" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-300 hover:text-white underline">
+                    Verify on Wikipedia ↗
+                  </a>
+                  <button onclick="openAlumniModal('${featuredAlum.id}')" class="px-3.5 py-1.5 rounded-lg bg-white text-navy-900 hover:bg-slate-100 text-xs font-semibold cursor-pointer">
+                    Full Profile →
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+          </section>
+
+          <!-- Quick Directory Stats Bar -->
+          <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Indexed Alumni</p>
+                <p class="text-2xl font-bold text-navy-900 mt-1">${approved.length}</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium">Verified Records</span>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Spotlight Colleges (≥${state.threshold})</p>
+                <p class="text-2xl font-bold text-emerald-600 mt-1">${spotlightColleges.length} <span class="text-sm font-normal text-slate-400">/ ${state.colleges.length}</span></p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium">Full Pages Active</span>
+            </div>
+            <div onclick="navigate('queue')" class="bg-white rounded-2xl border border-slate-200 p-5 flex items-center justify-between card-hover cursor-pointer">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Moderation Queue</p>
+                <p class="text-2xl font-bold text-amber-600 mt-1">${pending.length}</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold">Review Queue →</span>
+            </div>
+          </section>
+
+          <!-- Colleges Preview (4-column aligned grid) -->
+          <section>
+            <div class="flex items-end justify-between gap-4 mb-4">
+              <div>
+                <h2 class="text-xl font-bold text-navy-900">Colleges & Threshold Status</h2>
+                <p class="text-sm text-slate-500 mt-0.5">Schools with ${state.threshold}+ alumni unlock full spotlight grids; others show a clean minimalist fallback.</p>
+              </div>
+              <button onclick="navigate('colleges')" class="text-sm font-semibold text-navy-900 hover:underline shrink-0 cursor-pointer">
+                All Colleges →
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              ${state.colleges.slice(0, 4).map(renderCollegeCard).join('')}
+            </div>
+          </section>
+
+          <!-- Non-Overlapping Categories Preview -->
+          <section>
+            <div class="flex items-end justify-between gap-4 mb-4">
+              <div>
+                <h2 class="text-xl font-bold text-navy-900">Explore by Field</h2>
+                <p class="text-sm text-slate-500 mt-0.5">Clean, non-overlapping industry and discipline buckets.</p>
+              </div>
+              <button onclick="navigate('categories')" class="text-sm font-semibold text-navy-900 hover:underline shrink-0 cursor-pointer">
+                View All →
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${CATEGORIES.map(cat => {
+                const count = approved.filter(a => a.category === cat).length;
+                const meta = CATEGORY_META[cat];
+                return `
+                  <button onclick="navigate('categories', '${cat}')" class="bg-white rounded-2xl border border-slate-200 p-5 text-left card-hover cursor-pointer flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold border ${meta.color}">${escapeHtml(cat)}</span>
+                        <span class="text-xs font-bold text-slate-500">${count} alumni</span>
+                      </div>
+                      <p class="text-sm text-slate-600 mt-2">${escapeHtml(meta.desc)}</p>
+                    </div>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderCollegesView() {
+      const tiers = ['Ivies', 'T20', 'Other'];
+      return `
+        <div class="space-y-8">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-bold text-navy-900">Colleges Directory</h1>
+              <p class="text-sm text-slate-500 mt-1">
+                Dynamic template rule: colleges with <strong>≥ ${state.threshold} alumni</strong> display full spotlight pages; colleges below ${state.threshold} render the minimalist fallback.
+              </p>
+            </div>
+
+            <!-- Interactive Threshold Tester -->
+            <div class="flex flex-wrap items-center gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
+              <label for="thresholdInput" class="text-xs font-semibold text-slate-700">Spotlight Threshold:</label>
+              <input
+                id="thresholdInput"
+                type="number"
+                min="1"
+                max="25"
+                value="${state.threshold}"
+                onchange="setThreshold(this.value)"
+                class="w-16 px-2.5 py-1 text-sm font-bold text-navy-900 bg-white border border-slate-300 rounded-lg text-center"
+              />
+              <button onclick="openBatchModal()" class="px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold cursor-pointer">
+                + Add Names
+              </button>
+            </div>
+          </div>
+
+          ${tiers.map(tier => {
+            const list = state.colleges.filter(c => c.tier === tier);
+            if (!list.length) return '';
+            return `
+              <section>
+                <div class="flex items-center gap-3 mb-4">
+                  <h2 class="text-lg font-bold text-navy-900">${escapeHtml(tier)}</h2>
+                  <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-200/70 text-slate-600">${list.length} schools</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  ${list.map(renderCollegeCard).join('')}
+                </div>
+              </section>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderCollegeDetailView() {
+      const college = getCollegeById(state.selectedCollegeId || state.colleges[0].id);
+      const list = getApprovedForCollege(college.id);
+      const count = list.length;
+      const isSpotlight = count >= state.threshold;
+
+      // Category breakdown for Spotlight stats
+      const catCounts = {};
+      list.forEach(a => {
+        catCounts[a.category] = (catCounts[a.category] || 0) + 1;
+      });
+      const topFields = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+
+      if (isSpotlight) {
+        // === FULL COLLEGE SPOTLIGHT VIEW (>= 10 ALUMNI) ===
+        return `
+          <div class="space-y-8">
+            <div>
+              <button onclick="navigate('colleges')" class="text-xs font-semibold text-slate-500 hover:text-navy-900 mb-4 inline-flex items-center gap-1 cursor-pointer">
+                ← Back to Colleges
+              </button>
+
+              <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
+                <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                  <div class="max-w-3xl">
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                      <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">${escapeHtml(college.tier)}</span>
+                      <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Full Spotlight Unlocked (${count} Alumni)
+                      </span>
+                      ${college.location ? `<span class="text-xs text-slate-400">• ${escapeHtml(college.location)}</span>` : ''}
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-navy-900">${escapeHtml(college.name)}</h1>
+                    <p class="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed">${escapeHtml(college.description)}</p>
+                  </div>
+
+                  <div class="flex flex-wrap sm:flex-nowrap gap-2 shrink-0">
+                    <button onclick="openBatchModal('${college.id}')" class="px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold cursor-pointer">
+                      + Add More Alumni
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Spotlight Breakdown Stats -->
+                <div class="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <p class="text-xs font-semibold text-slate-400 uppercase">Indexed Alumni</p>
+                    <p class="text-2xl font-bold text-navy-900 mt-0.5">${count}</p>
+                  </div>
+                  <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 sm:col-span-2">
+                    <p class="text-xs font-semibold text-slate-400 uppercase mb-2">Field Breakdown</p>
+                    <div class="flex flex-wrap gap-2">
+                      ${topFields.map(([cat, num]) => `
+                        <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700">
+                          ${escapeHtml(cat)}: <strong class="text-navy-900">${num}</strong>
+                        </span>
+                      `).join('')}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Full Alumni Grid -->
+            <section>
+              <h2 class="text-lg font-bold text-navy-900 mb-4">Notable Alumni (${count})</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                ${list.map(a => renderAlumniCard(a, false)).join('')}
+              </div>
+            </section>
+          </div>
+        `;
+      } else {
+        // === MINIMALIST FALLBACK VIEW (< 10 ALUMNI) ===
+        const remaining = Math.max(0, state.threshold - count);
+        return `
+          <div class="space-y-8">
+            <div>
+              <button onclick="navigate('colleges')" class="text-xs font-semibold text-slate-500 hover:text-navy-900 mb-4 inline-flex items-center gap-1 cursor-pointer">
+                ← Back to Colleges
+              </button>
+
+              <!-- Minimalist College-Name Fallback Card -->
+              <div class="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 text-center max-w-3xl mx-auto">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 mb-4">
+                  ${count} of ${state.threshold} Alumni Indexed
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-bold text-navy-900">${escapeHtml(college.name)}</h1>
+                <p class="text-sm text-slate-500 mt-3 max-w-lg mx-auto leading-relaxed">
+                  Fewer than ${state.threshold} notable alumni indexed so far — full college spotlight, stats, and bio grid unlock automatically once <strong>${remaining} more</strong> ${remaining === 1 ? 'entry is' : 'entries are'} approved.
+                </p>
+
+                <div class="w-full max-w-xs mx-auto h-2 bg-slate-100 rounded-full overflow-hidden mt-5">
+                  <div class="h-full bg-amber-400 rounded-full transition-all" style="width: ${Math.round((count / state.threshold) * 100)}%"></div>
+                </div>
+
+                <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                  <button onclick="openBatchModal('${college.id}')" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold shadow-sm cursor-pointer">
+                    + Quick Add Names for ${escapeHtml(college.shortName)}
+                  </button>
+                  <button onclick="navigate('submit', '${college.id}')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium cursor-pointer">
+                    Detailed Submission Form
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            ${count > 0 ? `
+              <section class="max-w-5xl mx-auto">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Currently Indexed (${count})</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  ${list.map(a => renderAlumniCard(a, false)).join('')}
+                </div>
+              </section>
+            ` : ''}
+          </div>
+        `;
+      }
+    }
+
+    function renderCategoriesView() {
+      const approved = getApprovedAlumni();
+      const filtered = state.selectedCategory === 'All'
+        ? approved
+        : approved.filter(a => a.category === state.selectedCategory);
+
+      return `
+        <div class="space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6">
+            <h1 class="text-2xl font-bold text-navy-900">Browse Alumni by Field</h1>
+            <p class="text-sm text-slate-500 mt-1">Non-overlapping categories so actors, athletes, founders, and public servants stay neatly organized.</p>
+
+            <div class="flex flex-wrap gap-2 mt-5">
+              <button
+                onclick="state.selectedCategory='All'; render()"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${state.selectedCategory === 'All' ? 'bg-navy-900 text-white border-navy-900' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                All Fields (${approved.length})
+              </button>
+              ${CATEGORIES.map(cat => {
+                const count = approved.filter(a => a.category === cat).length;
+                const active = state.selectedCategory === cat;
+                return `
+                  <button
+                    onclick="state.selectedCategory='${cat}'; render()"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${active ? 'bg-navy-900 text-white border-navy-900' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}">
+                    ${escapeHtml(cat)} (${count})
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            ${filtered.map(a => renderAlumniCard(a, true)).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSubmitView() {
+      const preselected = state.selectedCollegeId || state.colleges[0].id;
+      return `
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
+            <div class="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <h1 class="text-2xl font-bold text-navy-900">Suggest a Notable Alumnus</h1>
+                <p class="text-sm text-slate-500 mt-1">Entries require a verifiable source link (like Wikipedia) and keep overall bio separate from campus context.</p>
+              </div>
+              <button onclick="openBatchModal()" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold shrink-0 cursor-pointer">
+                Batch Mode
+              </button>
+            </div>
+
+            <form onsubmit="handleSingleSubmit(event)" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                  <input id="subName" required type="text" placeholder="e.g., Conan O'Brien" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">College / University *</label>
+                  <select id="subCollege" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none">
+                    ${state.colleges.map(c => `<option value="${c.id}" ${c.id === preselected ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Degree & Class Year</label>
+                  <input id="subDegree" type="text" placeholder="e.g., BA History (1985) or MD" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Primary Field *</label>
+                  <select id="subCategory" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none">
+                    ${CATEGORIES.map(cat => `<option value="${cat}">${escapeHtml(cat)}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Part 1: Overall Bio (1–2 original sentences) *</label>
+                <textarea id="subBio" required rows="2" placeholder="What are they known for after graduation?" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Part 2: Campus & Degree Context (leave blank if unknown)</label>
+                <textarea id="subCampus" rows="2" placeholder="Clubs, campus newspaper, varsity sports, or academic focus..." class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none"></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Notable Work / Credits</label>
+                  <input id="subWork" type="text" placeholder="e.g., Books, companies, films, awards" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Verification Source URL (Wikipedia) *</label>
+                  <input id="subSource" required type="url" placeholder="https://en.wikipedia.org/wiki/..." class="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-navy-900 outline-none" />
+                </div>
+              </div>
+
+              <div class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+                <label class="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                  <input id="subDirectApprove" type="checkbox" class="rounded border-slate-300 text-navy-900" />
+                  <span>Publish immediately (skip Admin Queue for testing)</span>
+                </label>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold shadow-sm cursor-pointer">
+                  Submit Entry
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQueueView() {
+      const pending = getPendingAlumni();
+      return `
+        <div class="max-w-4xl mx-auto space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-amber-700">Moderation Queue</span>
+              <h1 class="text-2xl font-bold text-navy-900 mt-0.5">Pending Submissions (${pending.length})</h1>
+              <p class="text-sm text-slate-500 mt-1">Approve entries to publish them live and update each college’s 10-alumni spotlight counter.</p>
+            </div>
+            <button onclick="navigate('submit')" class="px-4 py-2 rounded-xl bg-navy-900 text-white text-xs font-semibold cursor-pointer">
+              + New Submission
+            </button>
+          </div>
+
+          ${pending.length ? `
+            <div class="space-y-4">
+              ${pending.map(item => {
+                const college = getCollegeById(item.collegeId);
+                const currentCount = getApprovedForCollege(college.id).length;
+                return `
+                  <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="space-y-1.5">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="text-lg font-bold text-navy-900">${escapeHtml(item.name)}</h3>
+                        <span class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700">${escapeHtml(college.name)} (${currentCount}/${state.threshold})</span>
+                        <span class="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700">${escapeHtml(item.category)}</span>
+                      </div>
+                      <p class="text-sm text-slate-600">${escapeHtml(item.overallBio)}</p>
+                      ${item.campusNote ? `<p class="text-xs text-slate-500"><strong>Campus:</strong> ${escapeHtml(item.campusNote)}</p>` : ''}
+                      <a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="inline-block text-xs text-navy-900 underline">
+                        Source: ${escapeHtml(item.sourceUrl)} ↗
+                      </a>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                      <button onclick="rejectSubmission('${item.id}')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer">
+                        Reject
+                      </button>
+                      <button onclick="approveSubmission('${item.id}')" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm cursor-pointer">
+                        Approve & Publish
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          ` : `
+            <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center">
+              <p class="text-base font-semibold text-slate-800">Queue is all caught up!</p>
+              <p class="text-sm text-slate-500 mt-1">All submitted entries have been reviewed. Add more via Quick Add or the Submit form.</p>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function renderAboutView() {
+      return `
+        <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 space-y-6">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-amber-700">About the Project</span>
+            <h1 class="text-2xl sm:text-3xl font-bold text-navy-900 mt-1">Why famousalumni.org?</h1>
+          </div>
+          <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Most college search tools focus exclusively on admissions metrics—acceptance rates, test score ranges, and rankings. <strong>famousalumni.org</strong> focuses on real-world outcomes and campus context: what people from a given school went on to create, study, and lead.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <h3 class="font-bold text-sm text-navy-900">Two-Part Biographical Standard</h3>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                Every profile separates post-college achievement from undergraduate/graduate campus context—and never invents club activities if they aren’t verified.
+              </p>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+              <h3 class="font-bold text-sm text-navy-900">The 10-Alumni Threshold</h3>
+              <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                To prevent half-empty grids, colleges unlock full spotlight pages once at least 10 notable alumni are indexed and verified.
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 8. MODALS & MUTATIONS (ADD, BATCH ADD, APPROVE, REJECT)
+    // =========================================================================
+    function openAlumniModal(id) {
+      const alum = state.alumni.find(a => a.id === id);
+      if (!alum) return;
+      const college = getCollegeById(alum.collegeId);
+      const catStyle = CATEGORY_META[alum.category]?.color || 'bg-slate-100 text-slate-700 border-slate-200';
+
+      const card = document.getElementById('alumniModalCard');
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-14 h-14 rounded-2xl bg-navy-900 text-white font-bold text-lg flex items-center justify-center shrink-0">
+              ${escapeHtml(getInitials(alum.name))}
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-navy-900">${escapeHtml(alum.name)}</h2>
+              <button onclick="closeAlumniModal(); navigate('college-detail', '${college.id}')" class="text-sm font-semibold text-navy-900 hover:underline cursor-pointer">
+                ${escapeHtml(college.name)} →
+              </button>
+            </div>
+          </div>
+          <button onclick="closeAlumniModal()" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 mt-4">
+          <span class="px-2.5 py-1 rounded-lg text-xs font-semibold border ${catStyle}">${escapeHtml(alum.category)}</span>
+          ${alum.degree ? `<span class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">${escapeHtml(alum.degree)}</span>` : ''}
+        </div>
+
+        <div class="mt-6 space-y-4">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">1. Overall Bio</p>
+            <p class="text-sm text-slate-800 leading-relaxed">${escapeHtml(alum.overallBio)}</p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-amber-50/50 border border-amber-200/70">
+            <p class="text-xs font-bold uppercase tracking-wider text-amber-800 mb-1">2. Campus & Degree Context</p>
+            <p class="text-sm text-slate-800 leading-relaxed">
+              ${alum.campusNote ? escapeHtml(alum.campusNote) : '<span class="text-slate-400 italic">Specific campus clubs or activities not listed in source record.</span>'}
+            </p>
+          </div>
+
+          ${alum.notableWork ? `
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Notable Work & Credits</p>
+              <p class="text-sm font-medium text-slate-700">${escapeHtml(alum.notableWork)}</p>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
+          <a href="${escapeHtml(alum.sourceUrl || 'https://en.wikipedia.org')}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-semibold text-navy-900 hover:underline">
+            <span>Verify on Wikipedia</span>
+            <span>↗</span>
+          </a>
+          <button onclick="closeAlumniModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer">
+            Close
+          </button>
+        </div>
+      `;
+      document.getElementById('alumniModal').classList.remove('hidden');
+    }
+
+    function closeAlumniModal() {
+      document.getElementById('alumniModal').classList.add('hidden');
+    }
+
+    function openBatchModal(preselectedCollegeId = null) {
+      const colSelect = document.getElementById('batchCollegeSelect');
+      const catSelect = document.getElementById('batchCategorySelect');
+      const targetId = preselectedCollegeId || state.selectedCollegeId || 'harvard';
+
+      colSelect.innerHTML = state.colleges.map(c => {
+        const cnt = getApprovedForCollege(c.id).length;
+        return `<option value="${c.id}" ${c.id === targetId ? 'selected' : ''}>${escapeHtml(c.name)} (${cnt}/${state.threshold})</option>`;
+      }).join('');
+
+      catSelect.innerHTML = CATEGORIES.map(cat => `<option value="${cat}">${escapeHtml(cat)}</option>`).join('');
+      document.getElementById('batchNamesInput').value = '';
+      document.getElementById('batchModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('batchNamesInput').focus(), 50);
+    }
+
+    function closeBatchModal() {
+      document.getElementById('batchModal').classList.add('hidden');
+    }
+
+    function submitBatchNames() {
+      const collegeId = document.getElementById('batchCollegeSelect').value;
+      const defaultCategory = document.getElementById('batchCategorySelect').value;
+      const autoApprove = document.getElementById('batchAutoApprove').checked;
+      const raw = document.getElementById('batchNamesInput').value;
+
+      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      if (!lines.length) {
+        showToast('Paste at least one name first.', 'info');
+        return;
+      }
+
+      const college = getCollegeById(collegeId);
+      const beforeCount = getApprovedForCollege(collegeId).length;
+
+      lines.forEach((line, idx) => {
+        const parts = line.split('|').map(p => p.trim());
+        const name = parts[0];
+        const degree = parts[1] || '';
+        const campusNote = parts[2] || '';
+        const wikiSlug = encodeURIComponent(name.replace(/\s+/g, '_'));
+
+        state.alumni.unshift({
+          id: 'alum-' + Date.now() + '-' + idx,
+          name,
+          collegeId,
+          degree,
+          category: defaultCategory,
+          overallBio: `Notable ${college.shortName} alumnus recognized for contributions in ${defaultCategory.toLowerCase()}.`,
+          campusNote,
+          notableWork: '',
+          sourceUrl: `https://en.wikipedia.org/wiki/${wikiSlug}`,
+          status: autoApprove ? 'approved' : 'pending',
+          featured: false
+        });
+      });
+
+      saveState();
+      closeBatchModal();
+
+      const afterCount = getApprovedForCollege(collegeId).length;
+      if (autoApprove && beforeCount < state.threshold && afterCount >= state.threshold) {
+        showToast(`Unlocked! ${college.shortName} hit ${afterCount} alumni and unlocked its full spotlight!`);
+        navigate('college-detail', collegeId);
+      } else {
+        showToast(`Added ${lines.length} ${lines.length === 1 ? 'person' : 'people'} to ${college.shortName}.`);
+        render();
+      }
+    }
+
+    function handleSingleSubmit(e) {
+      e.preventDefault();
+      const collegeId = document.getElementById('subCollege').value;
+      const name = document.getElementById('subName').value.trim();
+      const degree = document.getElementById('subDegree').value.trim();
+      const category = document.getElementById('subCategory').value;
+      const overallBio = document.getElementById('subBio').value.trim();
+      const campusNote = document.getElementById('subCampus').value.trim();
+      const notableWork = document.getElementById('subWork').value.trim();
+      const sourceUrl = document.getElementById('subSource').value.trim();
+      const directApprove = document.getElementById('subDirectApprove').checked;
+
+      const beforeCount = getApprovedForCollege(collegeId).length;
+      const college = getCollegeById(collegeId);
+
+      state.alumni.unshift({
+        id: 'alum-' + Date.now(),
+        name,
+        collegeId,
+        degree,
+        category,
+        overallBio,
+        campusNote,
+        notableWork,
+        sourceUrl,
+        status: directApprove ? 'approved' : 'pending',
+        featured: false
+      });
+
+      saveState();
+      const afterCount = getApprovedForCollege(collegeId).length;
+
+      if (directApprove) {
+        if (beforeCount < state.threshold && afterCount >= state.threshold) {
+          showToast(`${college.shortName} just hit ${afterCount} alumni — Spotlight unlocked!`);
+        } else {
+          showToast(`${name} published to ${college.shortName}.`);
+        }
+        navigate('college-detail', collegeId);
+      } else {
+        showToast(`${name} added to the Admin Queue for review.`);
+        navigate('queue');
+      }
+    }
+
+    function approveSubmission(id) {
+      const item = state.alumni.find(a => a.id === id);
+      if (!item) return;
+      const beforeCount = getApprovedForCollege(item.collegeId).length;
+      item.status = 'approved';
+      saveState();
+      const afterCount = getApprovedForCollege(item.collegeId).length;
+      const college = getCollegeById(item.collegeId);
+
+      if (beforeCount < state.threshold && afterCount >= state.threshold) {
+        showToast(`${college.shortName} reached ${afterCount} alumni — Full Spotlight unlocked!`);
+      } else {
+        showToast(`Approved ${item.name} (${afterCount}/${state.threshold} for ${college.shortName}).`);
+      }
+      render();
+    }
+
+    function rejectSubmission(id) {
+      state.alumni = state.alumni.filter(a => a.id !== id);
+      saveState();
+      showToast('Submission removed from queue.', 'info');
+      render();
+    }
+
+    // =========================================================================
+    // 9. MAIN RENDER LOOP
+    // =========================================================================
+    function render() {
+      // Update top banner threshold label & queue count
+      document.getElementById('bannerThresholdLabel').textContent = state.threshold;
+      document.getElementById('navQueueBadge').textContent = getPendingAlumni().length;
+
+      // Update active nav tab styling
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const target = btn.getAttribute('data-nav');
+        const isActive =
+          target === state.route ||
+          (target === 'colleges' && state.route === 'college-detail');
+        if (isActive) {
+          btn.className = 'nav-btn px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap bg-navy-900 text-white transition cursor-pointer';
+        } else {
+          btn.className = 'nav-btn px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap text-slate-600 hover:text-navy-900 hover:bg-slate-100 transition cursor-pointer';
+        }
+      });
+
+      const main = document.getElementById('appMain');
+      if (state.searchQuery) {
+        main.innerHTML = renderSearchResults();
+        return;
+      }
+
+      switch (state.route) {
+        case 'colleges':
+          main.innerHTML = renderCollegesView();
+          break;
+        case 'college-detail':
+          main.innerHTML = renderCollegeDetailView();
+          break;
+        case 'categories':
+          main.innerHTML = renderCategoriesView();
+          break;
+        case 'submit':
+          main.innerHTML = renderSubmitView();
+          break;
+        case 'queue':
+          main.innerHTML = renderQueueView();
+          break;
+        case 'about':
+          main.innerHTML = renderAboutView();
+          break;
+        case 'home':
+        default:
+          main.innerHTML = renderHomeView();
+          break;
+      }
+    }
+
+    // Boot application
+    loadState();
+    render();
+  </script>
+</body>
+</html>
